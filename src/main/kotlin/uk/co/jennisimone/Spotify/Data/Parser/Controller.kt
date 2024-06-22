@@ -20,7 +20,41 @@ class Controller {
         return history
             .groupBy { it.master_metadata_album_artist_name }
             .map { it.key to it.value }.sortedBy { it.second.size }.reversed().toMap()
-            .map { entry -> ArtistRecord(entry.key, entry.value.map { it.master_metadata_track_name }.toSet(), entry.value.size) }
+            .map { entry -> ArtistRecord(entry.key, entry.value.size) }
+    }
+
+    @GetMapping(path = ["/artists/tracks/{year}"])
+    fun findArtistTracks(@PathVariable year: String): List<ArtistTracksRecord> {
+        val history: Array<ListeningHistory> = listeningHistories(year)
+        return history
+            .groupBy { it.master_metadata_album_artist_name }
+            .map { it.key to it.value }.sortedBy { it.second.size }.reversed().toMap()
+            .map { entry ->
+                ArtistTracksRecord(
+                    entry.key,
+                    entry.value.groupBy { it.master_metadata_track_name }.map { it.key to it.value }
+                        .sortedBy { it.second.size }.reversed()
+                        .map { it.first }.toSet(),
+                    entry.value.size
+                )
+            }
+    }
+
+    @GetMapping(path = ["/artists/albums/{year}"])
+    fun findArtistAlbums(@PathVariable year: String): List<ArtistAlbumsRecord> {
+        val history: Array<ListeningHistory> = listeningHistories(year)
+        return history
+            .groupBy { it.master_metadata_album_artist_name }
+            .map { it.key to it.value }.sortedBy { it.second.size }.reversed().toMap()
+            .map { entry ->
+                ArtistAlbumsRecord(
+                    entry.key,
+                    entry.value.groupBy { it.master_metadata_album_album_name }.map { it.key to it.value }
+                        .sortedBy { it.second.size }.reversed()
+                        .map { it.first }.toSet(),
+                    entry.value.size
+                )
+            }
     }
 
     @GetMapping(path = ["/tracks/{year}"])
@@ -70,7 +104,11 @@ class Controller {
         }
 }
 
-data class ArtistRecord(val artist: String?, val songs: Set<String?>, val timesPlayed: Int)
+data class ArtistRecord(val artist: String?, val timesPlayed: Int)
+
+data class ArtistTracksRecord(val artist: String?, val songs: Set<String?>, val timesPlayed: Int)
+
+data class ArtistAlbumsRecord(val artist: String?, val albums: Set<String?>, val timesPlayed: Int)
 
 data class TrackRecord(val track: String?, val artist: String?, val timesPlayed: Int)
 

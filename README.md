@@ -8,5 +8,9 @@ You can then look at your Artist history, Track history and Album history for ea
 - `localhost:8080/api/parse/artists/{year}`
 - `localhost:8080/api/parse/tracks/{year}`
 - `localhost:8080/api/parse/albums/{year}`
+- `localhost:8080/api/parse/artists/tracks/{year}`
+- `localhost:8080/api/parse/artists/albums/{year}`
 
-These will display your data in JSON format, with the requested fields in order of amount listened. Artists also groups the tracks for ease, and Tracks and Albums both tell you who the artist is. It's worth noting though that compilation albums will just display the artist for the first track rather than various.
+These will display your data in JSON format, with the requested fields in order of amount listened. 
+
+Artists also has the options to show the tracks or Albums in popularity order, and Tracks and Albums both tell you who the artist is. It's worth noting though that compilation albums will just display the artist for the first track rather than various.
