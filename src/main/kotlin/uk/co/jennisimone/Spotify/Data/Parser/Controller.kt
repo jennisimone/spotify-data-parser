@@ -20,7 +20,8 @@ class Controller {
         return history
             .groupBy { it.master_metadata_album_artist_name }
             .map { it.key to it.value }.sortedBy { it.second.size }.reversed().toMap()
-            .map { entry -> ArtistRecord(entry.key, entry.value.size) }
+            .map { entry -> ArtistRecord(artist = entry.key, timesPlayed = entry.value.size) }
+            .onEachIndexed{ index, entry -> entry.position = index + 1}
     }
 
     @GetMapping(path = ["/artists/tracks/{year}"])
@@ -31,13 +32,13 @@ class Controller {
             .map { it.key to it.value }.sortedBy { it.second.size }.reversed().toMap()
             .map { entry ->
                 ArtistTracksRecord(
-                    entry.key,
-                    entry.value.groupBy { it.master_metadata_track_name }.map { it.key to it.value }
+                    artist = entry.key,
+                    songs = entry.value.groupBy { it.master_metadata_track_name }.map { it.key to it.value }
                         .sortedBy { it.second.size }.reversed()
                         .map { it.first }.toSet(),
-                    entry.value.size
+                    timesPlayed = entry.value.size
                 )
-            }
+            }.onEachIndexed{ index, entry -> entry.position = index + 1}
     }
 
     @GetMapping(path = ["/artists/albums/{year}"])
@@ -48,13 +49,13 @@ class Controller {
             .map { it.key to it.value }.sortedBy { it.second.size }.reversed().toMap()
             .map { entry ->
                 ArtistAlbumsRecord(
-                    entry.key,
-                    entry.value.groupBy { it.master_metadata_album_album_name }.map { it.key to it.value }
+                    artist = entry.key,
+                    albums = entry.value.groupBy { it.master_metadata_album_album_name }.map { it.key to it.value }
                         .sortedBy { it.second.size }.reversed()
                         .map { it.first }.toSet(),
-                    entry.value.size
+                    timesPlayed = entry.value.size
                 )
-            }
+            }.onEachIndexed{ index, entry -> entry.position = index + 1}
     }
 
     @GetMapping(path = ["/tracks/{year}"])
@@ -63,7 +64,12 @@ class Controller {
         return history
             .groupBy { it.master_metadata_track_name }
             .map { it.key to it.value }.sortedBy { it.second.size }.reversed().toMap()
-            .map { entry -> TrackRecord(entry.key, entry.value[0].master_metadata_album_artist_name, entry.value.size) }
+            .map { entry -> TrackRecord(
+                artist = entry.value[0].master_metadata_album_artist_name,
+                track = entry.key,
+                timesPlayed = entry.value.size
+            ) }
+            .onEachIndexed{ index, entry -> entry.position = index + 1}
     }
 
     @GetMapping(path = ["/albums/{year}"])
@@ -72,7 +78,12 @@ class Controller {
         return history
             .groupBy { it.master_metadata_album_album_name }
             .map { it.key to it.value }.sortedBy { it.second.size }.reversed().toMap()
-            .map { entry -> AlbumRecord(entry.key, entry.value[0].master_metadata_album_artist_name, entry.value.size) }
+            .map { entry -> AlbumRecord(
+                artist = entry.value[0].master_metadata_album_artist_name,
+                album = entry.key,
+                timesPlayed = entry.value.size
+            ) }
+            .onEachIndexed{ index, entry -> entry.position = index + 1}
     }
 
     private fun listeningHistories(
@@ -104,12 +115,22 @@ class Controller {
         }
 }
 
-data class ArtistRecord(val artist: String?, val timesPlayed: Int)
+data class ArtistRecord(var position: Int = 0, val artist: String?, val timesPlayed: Int)
 
-data class ArtistTracksRecord(val artist: String?, val songs: Set<String?>, val timesPlayed: Int)
+data class ArtistTracksRecord(
+    var position: Int = 0,
+    val artist: String?,
+    val songs: Set<String?>,
+    val timesPlayed: Int
+)
 
-data class ArtistAlbumsRecord(val artist: String?, val albums: Set<String?>, val timesPlayed: Int)
+data class ArtistAlbumsRecord(
+    var position: Int = 0,
+    val artist: String?,
+    val albums: Set<String?>,
+    val timesPlayed: Int
+)
 
-data class TrackRecord(val track: String?, val artist: String?, val timesPlayed: Int)
+data class TrackRecord(var position: Int = 0, val artist: String?, val track: String?, val timesPlayed: Int)
 
-data class AlbumRecord(val album: String?, val artist: String?, val timesPlayed: Int)
+data class AlbumRecord(var position: Int = 0, val artist: String?, val album: String?, val timesPlayed: Int)
